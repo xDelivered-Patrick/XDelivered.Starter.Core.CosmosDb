@@ -1,0 +1,155 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Steer73.Camile.Api</name>
+    </assembly>
+    <members>
+        <member name="T:Steer73.Camile.Api.Controllers.AccountController">
+            <summary>
+            Account controller is responsable for registering and authorizating users. Bearer tokens are granted via Jwt middleware
+            </summary>
+        </member>
+        <member name="M:Steer73.Camile.Api.Controllers.AccountController.#ctor(Microsoft.AspNetCore.Identity.UserManager{Steer73.Camile.Domain.CamileUser},Microsoft.AspNetCore.Identity.IPasswordHasher{Steer73.Camile.Domain.CamileUser},Microsoft.Extensions.Options.IOptions{Steer73.Camile.Core.Configuration.AppConfiguration},Steer73.Camile.Core.Interfaces.IEmailService)">
+            <inheritdoc />
+        </member>
+        <member name="M:Steer73.Camile.Api.Controllers.AuditController.GetOrderAudit(System.String)">
+            <summary>
+            Returns a temporary
+            </summary>
+        </member>
+        <member name="M:Steer73.Camile.Api.Controllers.LocationController.ResolvePostcode(System.String,System.String)">
+            <summary>
+            Resolves a postcode into a latitude longitude
+            </summary>
+            <param name="countryIso">either IE or UK. This can be pulled from the PCA Address result</param>
+            <param name="postcode">The postcode to resolve.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Steer73.Camile.Api.Controllers.OrderController.CreateOrder(Steer73.Camile.Api.Models.OrderRequest)">
+            <summary>
+            Creates an order in the backend and responds with next steps.
+            </summary>
+            <param name="orderRequest"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Steer73.Camile.Api.Controllers.OrderController.ConfirmAndExecuteCashOrder(System.String)">
+            <summary>
+            For cash orders only. Sets the order as confirmed and transfers the order to the store for Pixelpoint processing
+            </summary>
+            <param name="transactionId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Steer73.Camile.Api.Controllers.OrderController.ConfirmAndExecuteSagepayPayment(System.String)">
+            <summary>
+            Confirming a payment will process the transaction through Sagepay and transfer the order to the store for Pixelpoint processing
+            </summary>
+            <param name="temporaryPendingOrderId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Steer73.Camile.Api.Controllers.OrderController.ConvertSagePayToCashOrder(System.String)">
+            <summary>
+            For orders that have been marked as 'online payment'. This will convert them to a cash order to subvert the Sagepay payment process
+            </summary>
+            <param name="transactionGuid">retrieved from create order</param>
+            <returns></returns>
+        </member>
+        <member name="M:Steer73.Camile.Api.Controllers.OrderController.GetUserOrders(System.Int32)">
+            <summary>
+            Returns list of past orders for user
+            </summary>
+            <param name="numberOfLastOrders">number of orders to retrieve</param>
+            <returns></returns>
+        </member>
+        <member name="M:Steer73.Camile.Api.Controllers.OrderController.RemoveUserPaymentCard(System.String)">
+            <summary>
+            Remove users payment card
+            </summary>
+            <param name="cardIdentifier">card identifier</param>
+            <returns></returns>
+        </member>
+        <member name="M:Steer73.Camile.Api.Controllers.OrderController.GetUserPaymentCards">
+            <summary>
+            Get saved user payment card
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Steer73.Camile.Api.Controllers.OrderController.GetOrderCustomerStatus(System.Int32)">
+            <summary>
+            Get order customer status 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Steer73.Camile.Api.Controllers.ScheduleController">
+            <summary>
+            Note - this is a temporary workaround until the Azure function infrastructure stabilizes
+            </summary>
+        </member>
+        <member name="M:Steer73.Camile.Api.Controllers.StoreController.GetStoreById(System.Int32)">
+            <summary>
+            Returns a specific store
+            </summary>
+            <param name="storeId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Steer73.Camile.Api.Controllers.StoreController.GetStoreByUserLocation(System.Double,System.Double)">
+            <summary>
+            Returns the closest store to a user
+            </summary>
+            <param name="latitude"></param>
+            <param name="longitude"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Steer73.Camile.Api.Controllers.StoreController.GetStoreByLocationId(System.String)">
+            <summary>
+            Returns the store information provided by a given location id (provided by PCA)
+            </summary>
+            <param name="locationId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Steer73.Camile.Api.Controllers.StoreController.GetAllStores(System.String)">
+            <summary>
+            Returns all the stores currently online
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Steer73.Camile.Api.Controllers.StoreController.GetAllStoresWithDistanceInformation(System.Double,System.Double)">
+            <summary>
+            Returns all the stores currently online, and appends distance information to each store depending on the given coordinates
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Steer73.Camile.Api.Controllers.StoreController.GetStoresInRadius(System.Double,System.Double,System.Nullable{System.Double})">
+            <summary>
+            Returns all stores within the provided radious of the user
+            </summary>
+            <param name="latitude"></param>
+            <param name="longitude"></param>
+            <param name="radius"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Steer73.Camile.Api.Controllers.VoucherController.CalculateVoucher(Steer73.Camile.Api.Models.VoucherRequest)">
+            <summary>
+            Checks if a voucher is valid, and will calculate what the discount will be
+            
+            Note : this doesn't apply the voucher, that happens at the <see cref="M:Steer73.Camile.Api.Controllers.OrderController.CreateOrder(Steer73.Camile.Api.Models.OrderRequest)"/> endpoint
+            </summary>
+            <param name="request">model</param>
+            <returns>Discount amount that would be applied to the order</returns>
+        </member>
+        <member name="M:Steer73.Camile.Api.Factories.CamileUsersContextDesignFactory.CreateDbContext(System.String[])">
+            <summary>
+            Only used for local design factory. CICD takes care of develop/staging/prod deployments
+            </summary>
+        </member>
+        <member name="P:Steer73.Camile.Api.Models.OrderResponse.NextStep">
+            <summary>
+            What the client should do next
+            </summary>
+        </member>
+        <member name="P:Steer73.Camile.Api.Models.OrderResponse.PaymentForm">
+            <summary>
+            The payment form to show. This will be null if the next step is 'NoPayment'
+            </summary>
+        </member>
+    </members>
+</doc>

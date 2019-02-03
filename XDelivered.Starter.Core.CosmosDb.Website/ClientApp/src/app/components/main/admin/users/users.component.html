@@ -1,0 +1,13 @@
+<h1>Users</h1>
+
+<br/>
+<br/>
+
+<div class="container" *ngFor="let u of users">
+  <div (click)="load(u)" class="row">
+      <p class="col-sm-3">{{u.name}}</p>
+      <p class="col-sm-3">{{u.email}}</p>
+      <p class="col-sm-3">{{u.role}}</p>
+  </div>
+
+</div>

@@ -1,0 +1,22 @@
+version: '3.4'
+
+services:
+  XDelivered.Starter.Core.CosmosDb.website:
+    image: ${DOCKER_REGISTRY}xdeliveredwebsite
+    build:
+      context: .
+      dockerfile: XDelivered.Starter.Core.CosmosDb.Website/Dockerfile
+    links:
+      - sqlserver
+  sqlserver:
+    image: microsoft/mssql-server-linux:2017-latest
+    hostname: 'sqlserver'
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: "StrongPassw0rd"
+    volumes:
+      - ./data/mssql:/var/opt/mssql3
+    ports:
+      - '1433:1433'
+    expose:
+      - 1433

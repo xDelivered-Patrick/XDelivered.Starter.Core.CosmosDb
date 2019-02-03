@@ -1,0 +1,70 @@
+<div id="wrapper" class="clearfix" style="opacity: 1; animation-duration: 1500ms;">
+
+  <section id="content" style="margin-bottom: 0px;">
+    <div class="content-wrap">
+      <div class="container clearfix">
+
+        <p class="alert alert-success"><b>User:</b>{{user.email}}  <span *ngIf="user.role !== 'User'"><b>Role:</b>{{user.role}}</span>
+
+        <div id="side-navigation" class="tabs customjs ui-tabs ui-corner-all ui-widget ui-widget-content">
+          <div class="col_one_third nobottommargin">
+            <ul class="sidenav ui-tabs-nav ui-corner-all ui-helper-reset ui-helper-clearfix ui-widget-header" role="tablist">
+
+              <li *ngIf="user.role !== 'Owner'" role="tab" tabindex="0" class="ui-tabs-tab ui-corner-top ui-state-default ui-tab"
+                aria-controls="snav-content1">
+                <a routerLink="all" routerLinkActive="a-tab-active" role="presentation" tabindex="-1" class="ui-tabs-anchor"
+                  id="ui-id-1">
+                  <i class="icon-screen"></i>Restaurants<i class="icon-chevron-right"></i>
+                </a>
+              </li>
+
+              <li *ngIf="user.role == 'Owner'" role="tab" tabindex="-1" class="ui-tabs-tab ui-corner-top ui-state-default ui-tab" aria-controls="snav-content2"
+                aria-labelledby="ui-id-2" aria-selected="false" aria-expanded="false">
+                <a routerLink="my/restaurants" routerLinkActive="a-tab-active" href="#snav-content2" role="presentation" tabindex="-1" class="ui-tabs-anchor" id="ui-id-2">
+                  <i class="icon-magic"></i>My Restaurants<i class="icon-chevron-right"></i>
+                </a>
+              </li>
+
+              <li *ngIf="user.role == 'Owner'" role="tab" tabindex="-1" class="ui-tabs-tab ui-corner-top ui-state-default ui-tab" aria-controls="snav-content2"
+                aria-labelledby="ui-id-2" aria-selected="false" aria-expanded="false">
+                <a routerLink="my/need-reply" routerLinkActive="a-tab-active" href="#snav-content2" role="presentation" tabindex="-1" class="ui-tabs-anchor" id="ui-id-2">
+                  <i class="icon-magic"></i>Needs Review Responses<i class="icon-chevron-right"></i>
+                </a>
+              </li>
+
+              <li *ngIf="user.role == 'Admin'" role="tab" tabindex="-1" class="ui-tabs-tab ui-corner-top ui-state-default ui-tab" aria-controls="snav-content2"
+                aria-labelledby="ui-id-2" aria-selected="false" aria-expanded="false">
+                <a routerLink="admin/reviews" routerLinkActive="a-tab-active" href="#snav-content2" role="presentation" tabindex="-1" class="ui-tabs-anchor" id="ui-id-2">
+                  <i class="icon-magic"></i>Reviews<i class="icon-chevron-right"></i>
+                </a>
+              </li>
+
+              <li *ngIf="user.role == 'Admin'" role="tab" tabindex="-1" class="ui-tabs-tab ui-corner-top ui-state-default ui-tab" aria-controls="snav-content2"
+                aria-labelledby="ui-id-2" aria-selected="false" aria-expanded="false">
+                <a routerLink="admin/responses" routerLinkActive="a-tab-active" href="#snav-content2" role="presentation" tabindex="-1" class="ui-tabs-anchor" id="ui-id-2">
+                  <i class="icon-magic"></i>Responses<i class="icon-chevron-right"></i>
+                </a>
+              </li>
+
+              <li *ngIf="user.role == 'Admin'" role="tab" tabindex="-1" class="ui-tabs-tab ui-corner-top ui-state-default ui-tab" aria-controls="snav-content2"
+                aria-labelledby="ui-id-2" aria-selected="false" aria-expanded="false">
+                <a routerLink="admin/users" routerLinkActive="a-tab-active" href="#snav-content2" role="presentation" tabindex="-1" class="ui-tabs-anchor" id="ui-id-2">
+                  <i class="icon-magic"></i>Users<i class="icon-chevron-right"></i>
+                </a>
+              </li>
+
+              <li role="tab" tabindex="-1" class="ui-tabs-tab ui-corner-top ui-state-default ui-tab" aria-controls="snav-content5"
+                aria-labelledby="ui-id-5" aria-selected="false" aria-expanded="false">
+                <a href="#" (click)="logout()" role="presentation" tabindex="-1" class="ui-tabs-anchor" id="ui-id-5"><i
+                    class="icon-adjust"></i>Logout<i class="icon-chevron-right"></i></a>
+              </li>
+            </ul>
+          </div>
+          <div class="col_two_third col_last nobottommargin">
+            <router-outlet></router-outlet>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
