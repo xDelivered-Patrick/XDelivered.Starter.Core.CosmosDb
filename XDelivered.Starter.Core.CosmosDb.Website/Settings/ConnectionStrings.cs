@@ -1,7 +1,8 @@
 ﻿namespace XDelivered.StarterKits.NgCoreCosmosDb.Settings
 {
-    public class ConnectionStrings
+    public class MongoDbSettings
     {
-        public string SqlConnection { get; set; }
+        public string ConnectionString { get; set; }
+        public string DatabaseName { get; set; }
     }
 }

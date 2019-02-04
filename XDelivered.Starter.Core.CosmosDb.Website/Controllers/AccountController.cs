@@ -43,10 +43,8 @@ namespace XDelivered.StarterKits.NgCoreCosmosDb.Controllers
         [SwaggerOperation("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequestModel requestModel)
         {
-            var user = new User()
+            var user = new User(requestModel.Name, requestModel.Email)
             {
-                UserName = requestModel.Email,
-                Email = requestModel.Email,
                 Name = requestModel.Name,
                 Created = DateTime.UtcNow
             };
@@ -95,7 +93,7 @@ namespace XDelivered.StarterKits.NgCoreCosmosDb.Controllers
 
             return new UserInfoResponseModel()
             {
-                Email = user.Email,
+                Email = user.Email.NormalizedValue,
                 Created = user.Created,
                 Role = roles.FirstOrDefault()
             };

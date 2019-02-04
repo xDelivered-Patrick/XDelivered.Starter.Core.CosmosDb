@@ -18,11 +18,8 @@ namespace Tests.Integration.Helpers
         protected TestServer _server;
         protected HttpClient _client;
 
-        protected virtual ApplicationDbContext Database => Resolve<ApplicationDbContext>();
-
         public IntegrationTestBase()
         {
-            EntityFrameworkConnectionHelper.UseInMemory = true;
             ServerHelper.IntegrationTests = true;
 
             _server = new TestServer(new WebHostBuilder().UseStartup<Startup>());

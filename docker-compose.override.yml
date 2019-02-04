@@ -6,6 +6,3 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
       - "3001:80"
-    volumes:
-      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
-      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro

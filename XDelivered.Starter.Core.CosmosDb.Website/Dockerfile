@@ -1,9 +1,9 @@
-FROM microsoft/dotnet:2.1-aspnetcore-runtime AS base
+FROM microsoft/dotnet:2.2-aspnetcore-runtime AS base
 WORKDIR /app
 EXPOSE 3001
 EXPOSE 44374
 
-FROM microsoft/dotnet:2.1-sdk AS build
+FROM microsoft/dotnet:2.2-sdk AS build
 WORKDIR /src
 COPY XDelivered.Starter.Core.EF.Website/XDelivered.Starter.Core.CosmosDb.Website.csproj XDelivered.Starter.Core.EF.Website/
 RUN dotnet restore XDelivered.Starter.Core.CosmosDb.Website/XDelivered.Starter.Core.CosmosDb.Website.csproj

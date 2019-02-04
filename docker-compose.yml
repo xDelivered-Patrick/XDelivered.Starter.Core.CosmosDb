@@ -7,16 +7,15 @@ services:
       context: .
       dockerfile: XDelivered.Starter.Core.CosmosDb.Website/Dockerfile
     links:
-      - sqlserver
-  sqlserver:
-    image: microsoft/mssql-server-linux:2017-latest
-    hostname: 'sqlserver'
-    environment:
-      ACCEPT_EULA: Y
-      SA_PASSWORD: "StrongPassw0rd"
-    volumes:
-      - ./data/mssql:/var/opt/mssql3
+      - mongodb
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:latest
     ports:
-      - '1433:1433'
-    expose:
-      - 1433
+      - "27017:27017"
+    volumes:
+      - /data/db:/data/db
+    environment:
+      - MONGODB_DATABASE=xdelivered

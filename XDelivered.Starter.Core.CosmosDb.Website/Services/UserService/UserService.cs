@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AspNetCore.Identity.MongoDB;
+using AspNetCore.Identity.MongoDB.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 using xDelivered.Common;
 using XDelivered.StarterKits.NgCoreCosmosDb.Data;
 using XDelivered.StarterKits.NgCoreCosmosDb.Exceptions;
@@ -14,18 +16,18 @@ namespace XDelivered.StarterKits.NgCoreCosmosDb.Services
 {
     public class UserService : IUserService
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly IMongoCollection<User> _xdb;
         private readonly UserManager<User> _aspNetUserManager;
 
-        public UserService(ApplicationDbContext dbContext, UserManager<User> aspNetUserManager)
+        public UserService(IMongoCollection<User> xdb, UserManager<User> aspNetUserManager)
         {
-            _dbContext = dbContext;
+            _xdb = xdb;
             _aspNetUserManager = aspNetUserManager;
         }
 
         public async Task<List<UserModel>> GetAllUsers()
         {
-            var users = await _dbContext.Users.Where(x=>!x.Deleted).ToListAsync();
+            List<User> users = await _xdb.AsQueryable().ToListAsync();
             return users.Select(x=>Map(x)).ToList();
         }
 
@@ -36,9 +38,7 @@ namespace XDelivered.StarterKits.NgCoreCosmosDb.Services
                 throw new UserMessageException("User could not be found");
             }
 
-            user = _dbContext.Users.Single(x => x.Id == user.Id);
-            user.Deleted = true;
-            await _dbContext.SaveChangesAsync();
+            await _xdb.DeleteOneAsync(x=>x.Id == user.Id);
         }
         
         public async Task EditUser(UserModel userModel)
@@ -69,16 +69,14 @@ namespace XDelivered.StarterKits.NgCoreCosmosDb.Services
             }
 
             user.Name = userModel.Name;
-            user.Email = userModel.Email;
-            user.UserName = userModel.Email;
+            user.Email.SetNormalizedEmail(userModel.Email);
 
             await _aspNetUserManager.UpdateAsync(user);
         }
 
         public async Task<UserModel> GetUser(string id)
         {
-            var user = _dbContext.Users.SingleOrDefault(x => x.Id == id);
-
+            var user = await _xdb.Find(x => x.Id == id).FirstOrDefaultAsync();
             if (user == null)
             {
                 throw new UserMessageException("User not found");
@@ -95,7 +93,7 @@ namespace XDelivered.StarterKits.NgCoreCosmosDb.Services
             return new UserModel()
             {
                 Id = user.Id,
-                Email = user.Email,
+                Email = user.Email.Value,
                 Name = user.Name,
                 Role = role
             };

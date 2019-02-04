@@ -1,28 +1,28 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Autofac;
-using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Driver;
 using Swashbuckle.AspNetCore.Swagger;
 using XDelivered.StarterKits.NgCoreCosmosDb.Data;
 using XDelivered.StarterKits.NgCoreCosmosDb.Exceptions;
 using XDelivered.StarterKits.NgCoreCosmosDb.Helpers;
 using XDelivered.StarterKits.NgCoreCosmosDb.Services;
 using XDelivered.StarterKits.NgCoreCosmosDb.Settings;
-using XDelivered.StarterKits.NgCoreCosmosDb.Controllers;
+using User = XDelivered.StarterKits.NgCoreCosmosDb.Data.User;
+using AspNetCore.Identity.MongoDB;
+using XDelivered.Starter.Core.CosmosDb.Website.Data;
 
 namespace XDelivered.StarterKits.NgCoreCosmosDb
 {
@@ -54,7 +54,7 @@ namespace XDelivered.StarterKits.NgCoreCosmosDb
             services.AddOptions();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info {Version = "v1", Title = "Restaurant Review API",});
+                c.SwaggerDoc("v1", new Info {Version = "v1", Title = "XDelivered API",});
 
                 var basePath = PlatformServices.Default.Application.ApplicationBasePath;
                 var xmlPath = Path.Combine(basePath, "SwaggerProject.xml");
@@ -97,21 +97,23 @@ namespace XDelivered.StarterKits.NgCoreCosmosDb
 
         private void ConfigureIdentity(IServiceCollection services)
         {
-            if (EntityFrameworkConnectionHelper.UseRealServerConnection)
-            {
-                services.AddDbContext<ApplicationDbContext>(options =>
-                    options.UseSqlServer(Configuration.GetConnectionString(nameof(ConnectionStrings.SqlConnection))));
-            }
-            else
-            {
-                services.AddDbContext<ApplicationDbContext>(options =>
-                    options.UseInMemoryDatabase(nameof(ApplicationDbContext)));
-            }
+            // Add DocumentDb client singleton instance (it's recommended to use a singleton instance for it)
 
-            services.AddIdentity<User, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddRoleManager<RoleManager<IdentityRole>>()
+            services.Configure<MongoDbSettings>(Configuration.GetSection("MongoDb"));
+            services.AddSingleton<IUserStore<User>>(provider =>
+            {
+                var options = provider.GetService<IOptions<MongoDbSettings>>();
+                var client = new MongoClient(options.Value.ConnectionString);
+                var database = client.GetDatabase(options.Value.DatabaseName);
+
+                return MongoUserStore<User>.CreateAsync(database).GetAwaiter().GetResult();
+            });
+            services.AddIdentity<User>()
                 .AddDefaultTokenProviders();
+
+            //services.AddIdentityWithDocumentDBStores<User, IdentityRole>(client, x=>new DocumentCollection() { Id = "main"}, options => { })
+            //    .AddRoleManager<RoleManager<IdentityRole>>()
+            //    .AddDefaultTokenProviders();
 
             services.Configure<IdentityOptions>(options =>
             {
@@ -194,54 +196,35 @@ namespace XDelivered.StarterKits.NgCoreCosmosDb
                     name: "default",
                     template: "{controller}/{action=Index}/{id?}");
             });
-
-            MigrateDatabase(app);
-
-            CreateRolesThatDoNotExist(serviceProvider).Wait();
-
+            
             if (env.IsDevelopment() || ServerHelper.IntegrationTests)
             {
                 using (IServiceScope serviceScope = app.ApplicationServices
                     .GetRequiredService<IServiceScopeFactory>()
                     .CreateScope())
                 {
-                    ApplicationDbContext context = serviceScope.ServiceProvider.GetService<ApplicationDbContext>();
+                    MongoUserStore<User> context = serviceScope.ServiceProvider.GetService<MongoUserStore<User>>();
                     UserManager<User> userManager = serviceScope.ServiceProvider.GetService<UserManager<User>>();
 
+                    var users = userManager.Users.ToList();
                     Seed.SeedDb(context, userManager).Wait();
                 }
             }
         }
 
 
-        private async Task CreateRolesThatDoNotExist(IServiceProvider serviceProvider)
-        {
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        //private async Task CreateRolesThatDoNotExist(IServiceProvider serviceProvider)
+        //{
+        //    var roleManager = serviceProvider.GetRequiredService<RoleManager<DocumentDbIdentityRole>>();
 
-            foreach (var roleName in Enum.GetNames(typeof(Roles)))
-            {
-                var roleExist = await roleManager.RoleExistsAsync(roleName);
-                if (!roleExist)
-                {
-                    await roleManager.CreateAsync(new IdentityRole(roleName));
-                }
-            }
-        }
-
-
-        private void MigrateDatabase(IApplicationBuilder app)
-        {
-            if (EntityFrameworkConnectionHelper.UseRealServerConnection)
-            {
-                using (IServiceScope serviceScope = app.ApplicationServices
-                    .GetRequiredService<IServiceScopeFactory>()
-                    .CreateScope())
-                {
-                    var appdb = serviceScope.ServiceProvider.GetService<ApplicationDbContext>();
-                    appdb.Database.Migrate();
-
-                }
-            }
-        }
+        //    foreach (var roleName in Enum.GetNames(typeof(Roles)))
+        //    {
+        //        var roleExist = await roleManager.RoleExistsAsync(roleName);
+        //        if (!roleExist)
+        //        {
+        //            await roleManager.CreateAsync(new IdentityRole() { Name = roleName});
+        //        }
+        //    }
+        //}
     }
 }
