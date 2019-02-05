@@ -39,7 +39,7 @@ namespace XDelivered.StarterKits.NgCoreCosmosDb.Helpers
             {
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-                new Claim("UserId", user.Id)
+                new Claim("UserId", user.Id.ToString())
             };
 
             foreach (var role in roles)

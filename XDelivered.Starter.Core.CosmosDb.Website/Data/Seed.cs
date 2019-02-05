@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using AspNetCore.Identity.MongoDB;
+using AspNetCore.Identity.MongoDbCore;
 using Microsoft.AspNetCore.Identity;
 using XDelivered.StarterKits.NgCoreCosmosDb.Helpers;
 
@@ -33,34 +33,34 @@ namespace XDelivered.StarterKits.NgCoreCosmosDb.Data
         
         private static async Task SeedUsers(UserManager<User> userManager)
         {
-            if (!userManager.Users.Any(x => x.Email.Value == "standard@xdelivered.com"))
+            if (!userManager.Users.Any(x => x.Email == "standard@xdelivered.com"))
             {
                 //standard user
-                _user = new User("Mr. UserMoor", "standard@xdelivered.com")
+                _user = new User("standard@xdelivered.com", "standard@xdelivered.com")
                 {
                     Created = DateTime.UtcNow,
                 };
-                await userManager.CreateAsync(_user, "xdelivered99");
-                //await userManager.AddToRoleAsync(_user, Roles.User.ToString());
+                var result = await userManager.CreateAsync(_user, "xdelivered99");
+                result = await userManager.AddToRoleAsync(_user, Roles.User.ToString());
             }
             else
             {
-                _user = userManager.Users.FirstOrDefault(x => x.Email.Value == "standard@xdelivered.com");
+                _user = userManager.Users.FirstOrDefault(x => x.Email == "standard@xdelivered.com");
             }
 
-            if (!userManager.Users.Any(x => x.Email.Value == "standard2@xdelivered.com"))
+            if (!userManager.Users.Any(x => x.Email == "standard2@xdelivered.com"))
             {
-                _user2 = new User("User 2", "standard2@xdelivered.com")
+                _user2 = new User("standard2@xdelivered.com", "standard2@xdelivered.com")
                 {
                     Name = "User 2",
                     Created = DateTime.UtcNow
                 };
                 await userManager.CreateAsync(_user2, "xdelivered99");
-                //await userManager.AddToRoleAsync(_user2, Roles.User.ToString());
+                await userManager.AddToRoleAsync(_user2, Roles.User.ToString());
             }
             else
             {
-                _user2 = userManager.Users.FirstOrDefault(x => x.Email.Value == "standard2@xdelivered.com");
+                _user2 = userManager.Users.FirstOrDefault(x => x.Email == "standard2@xdelivered.com");
             }
         }
     }

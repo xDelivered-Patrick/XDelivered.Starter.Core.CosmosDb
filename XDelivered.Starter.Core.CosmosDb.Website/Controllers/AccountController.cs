@@ -43,9 +43,15 @@ namespace XDelivered.StarterKits.NgCoreCosmosDb.Controllers
         [SwaggerOperation("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequestModel requestModel)
         {
-            var user = new User(requestModel.Name, requestModel.Email)
+            //check allowed
+            var existing = _userManager.Users.SingleOrDefault(x=>x.Email == requestModel.Email);
+            if (existing != null)
             {
-                Name = requestModel.Name,
+                throw new UserMessageException("Username is already taken");
+            }
+
+            var user = new User(requestModel.Email, requestModel.Email)
+            {
                 Created = DateTime.UtcNow
             };
             IdentityResult createUserResult = await _userManager.CreateAsync(user, requestModel.Password);
@@ -65,7 +71,7 @@ namespace XDelivered.StarterKits.NgCoreCosmosDb.Controllers
         [SwaggerOperation(nameof(Login))]
         public async Task<ActionResult> Login([FromBody] LoginRequestModel requestModel)
         {
-            User user = await _userManager.FindByEmailAsync(requestModel.Email);
+            User user = _userManager.Users.SingleOrDefault(x => x.Email == requestModel.Email);
 
             if (user == null || _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, requestModel.Password) != PasswordVerificationResult.Success || user.Deleted)
             {
@@ -88,12 +94,12 @@ namespace XDelivered.StarterKits.NgCoreCosmosDb.Controllers
         public async Task<UserInfoResponseModel> GetUserInfo()
         {
             var userId = base.UserId;
-            User user = await _userManager.FindByIdAsync(userId);
+            User user = _userManager.Users.SingleOrDefault(x => x.Id == userId);
             IList<string> roles = await _userManager.GetRolesAsync(user);
 
             return new UserInfoResponseModel()
             {
-                Email = user.Email.NormalizedValue,
+                Email = user.Email,
                 Created = user.Created,
                 Role = roles.FirstOrDefault()
             };

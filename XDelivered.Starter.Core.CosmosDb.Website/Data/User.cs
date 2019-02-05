@@ -1,10 +1,11 @@
 ﻿using System;
-using AspNetCore.Identity.MongoDB;
-using AspNetCore.Identity.MongoDB.Models;
+using AspNetCore.Identity.MongoDbCore.Models;
+using MongoDbGenericRepository.Attributes;
 
 namespace XDelivered.StarterKits.NgCoreCosmosDb.Data
 {
-    public class User : MongoIdentityUser
+    [CollectionName("Users")]
+    public class User : MongoIdentityUser<string>
     {
         public DateTime Created { get; set; }
         public DateTime? Updated { get; set; }
@@ -13,15 +14,27 @@ namespace XDelivered.StarterKits.NgCoreCosmosDb.Data
         public string Name { get; set; }
         public bool Deleted { get; set; }
 
+        public User()
+        {
+            
+        }
         public User(string userName, string email) : base(userName, email)
         {
         }
+        
+        public User(string userName) : base(userName)
+        {
+        }
+    }
 
-        public User(string userName, MongoUserEmail email) : base(userName, email)
+
+    public class ApplicationRole : MongoIdentityRole<string>
+    {
+        public ApplicationRole() : base()
         {
         }
 
-        public User(string userName) : base(userName)
+        public ApplicationRole(string roleName) : base(roleName)
         {
         }
     }

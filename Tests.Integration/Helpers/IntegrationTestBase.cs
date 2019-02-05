@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Mongo2Go;
 using XDelivered.StarterKits.NgCoreCosmosDb;
 using XDelivered.StarterKits.NgCoreCosmosDb.Data;
 using XDelivered.StarterKits.NgCoreCosmosDb.Helpers;
@@ -17,10 +18,13 @@ namespace Tests.Integration.Helpers
     {
         protected TestServer _server;
         protected HttpClient _client;
+        private MongoDbRunner _runner;
 
         public IntegrationTestBase()
         {
             ServerHelper.IntegrationTests = true;
+
+            StartMongoInstance();
 
             _server = new TestServer(new WebHostBuilder().UseStartup<Startup>());
             _client = _server.CreateClient();
@@ -28,6 +32,12 @@ namespace Tests.Integration.Helpers
             var baseUri = _server.BaseAddress.ToString();
             baseUri = baseUri.Remove(baseUri.Length - 1);
             _client.BaseAddress = new Uri(baseUri);
+        }
+
+        private void StartMongoInstance()
+        {
+            _runner = MongoDbRunner.Start();
+            ServerHelper.IntegrationTestConnectionString = _runner.ConnectionString;
         }
 
         protected async Task Assert(HttpResponseMessage result)

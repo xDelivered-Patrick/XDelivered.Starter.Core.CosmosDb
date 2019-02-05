@@ -2,6 +2,10 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using AspNetCore.Identity.MongoDbCore;
+using AspNetCore.Identity.MongoDbCore.Extensions;
+using AspNetCore.Identity.MongoDbCore.Infrastructure;
 using Autofac;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -21,8 +25,9 @@ using XDelivered.StarterKits.NgCoreCosmosDb.Helpers;
 using XDelivered.StarterKits.NgCoreCosmosDb.Services;
 using XDelivered.StarterKits.NgCoreCosmosDb.Settings;
 using User = XDelivered.StarterKits.NgCoreCosmosDb.Data.User;
-using AspNetCore.Identity.MongoDB;
+using MongoDbGenericRepository;
 using XDelivered.Starter.Core.CosmosDb.Website.Data;
+using MongoDbSettings = XDelivered.StarterKits.NgCoreCosmosDb.Settings.MongoDbSettings;
 
 namespace XDelivered.StarterKits.NgCoreCosmosDb
 {
@@ -99,39 +104,44 @@ namespace XDelivered.StarterKits.NgCoreCosmosDb
         {
             // Add DocumentDb client singleton instance (it's recommended to use a singleton instance for it)
 
-            services.Configure<MongoDbSettings>(Configuration.GetSection("MongoDb"));
-            services.AddSingleton<IUserStore<User>>(provider =>
-            {
-                var options = provider.GetService<IOptions<MongoDbSettings>>();
-                var client = new MongoClient(options.Value.ConnectionString);
-                var database = client.GetDatabase(options.Value.DatabaseName);
+            var configurationSection = Configuration.GetSection("MongoDb");
+            services.Configure<MongoDbSettings>(configurationSection);
 
-                return MongoUserStore<User>.CreateAsync(database).GetAwaiter().GetResult();
-            });
-            services.AddIdentity<User>()
-                .AddDefaultTokenProviders();
+            var connectionString = ServerHelper.IntegrationTests
+                ? ServerHelper.IntegrationTestConnectionString
+                : configurationSection["ConnectionString"];
 
-            //services.AddIdentityWithDocumentDBStores<User, IdentityRole>(client, x=>new DocumentCollection() { Id = "main"}, options => { })
-            //    .AddRoleManager<RoleManager<IdentityRole>>()
+            var databaseName = configurationSection["DatabaseName"];
+            var mongoDbContext = new MongoDbContext(connectionString, databaseName);
+
+            //services.AddIdentity<User, ApplicationRole>()
+            //    .AddMongoDbStores<IMongoDbContext>(mongoDbContext)
             //    .AddDefaultTokenProviders();
 
-            services.Configure<IdentityOptions>(options =>
+            services.ConfigureMongoDbIdentity<User, ApplicationRole, string>(new MongoDbIdentityConfiguration()
             {
-                // Password settings
-                options.Password.RequireDigit = false;
-                options.Password.RequiredLength = 6;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequireLowercase = false;
-                options.Password.RequiredUniqueChars = 4;
+                MongoDbSettings = new AspNetCore.Identity.MongoDbCore.Infrastructure.MongoDbSettings
+                {
+                    ConnectionString = connectionString,
+                    DatabaseName = databaseName
+                },
+                IdentityOptionsAction = options =>
+                {
+                    options.Password.RequireDigit = false;
+                    options.Password.RequiredLength = 6;
+                    options.Password.RequireNonAlphanumeric = false;
+                    options.Password.RequireUppercase = false;
+                    options.Password.RequireLowercase = false;
+                    options.Password.RequiredUniqueChars = 4;
 
-                // Lockout settings
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
-                options.Lockout.MaxFailedAccessAttempts = 10;
-                options.Lockout.AllowedForNewUsers = true;
+                    // Lockout settings
+                    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
+                    options.Lockout.MaxFailedAccessAttempts = 10;
+                    options.Lockout.AllowedForNewUsers = true;
 
-                // User settings
-                options.User.RequireUniqueEmail = true;
+                    // User settings
+                    options.User.RequireUniqueEmail = true;
+                }
             });
 
             services.AddAuthentication(options =>
@@ -205,26 +215,26 @@ namespace XDelivered.StarterKits.NgCoreCosmosDb
                 {
                     MongoUserStore<User> context = serviceScope.ServiceProvider.GetService<MongoUserStore<User>>();
                     UserManager<User> userManager = serviceScope.ServiceProvider.GetService<UserManager<User>>();
-
-                    var users = userManager.Users.ToList();
+                    
+                    CreateRolesThatDoNotExist(serviceProvider).GetAwaiter().GetResult();
                     Seed.SeedDb(context, userManager).Wait();
                 }
             }
         }
 
 
-        //private async Task CreateRolesThatDoNotExist(IServiceProvider serviceProvider)
-        //{
-        //    var roleManager = serviceProvider.GetRequiredService<RoleManager<DocumentDbIdentityRole>>();
+        private async Task CreateRolesThatDoNotExist(IServiceProvider serviceProvider)
+        {
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
 
-        //    foreach (var roleName in Enum.GetNames(typeof(Roles)))
-        //    {
-        //        var roleExist = await roleManager.RoleExistsAsync(roleName);
-        //        if (!roleExist)
-        //        {
-        //            await roleManager.CreateAsync(new IdentityRole() { Name = roleName});
-        //        }
-        //    }
-        //}
+            foreach (var roleName in Enum.GetNames(typeof(Roles)))
+            {
+                var roleExist = await roleManager.RoleExistsAsync(roleName);
+                if (!roleExist)
+                {
+                    await roleManager.CreateAsync(new ApplicationRole(roleName));
+                }
+            }
+        }
     }
 }

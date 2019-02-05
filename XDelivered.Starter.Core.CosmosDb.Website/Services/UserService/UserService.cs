@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AspNetCore.Identity.MongoDB;
-using AspNetCore.Identity.MongoDB.Models;
 using Microsoft.AspNetCore.Identity;
 using MongoDB.Driver;
 using xDelivered.Common;
@@ -69,14 +67,14 @@ namespace XDelivered.StarterKits.NgCoreCosmosDb.Services
             }
 
             user.Name = userModel.Name;
-            user.Email.SetNormalizedEmail(userModel.Email);
+            user.Email = userModel.Email;
 
             await _aspNetUserManager.UpdateAsync(user);
         }
 
         public async Task<UserModel> GetUser(string id)
         {
-            var user = await _xdb.Find(x => x.Id == id).FirstOrDefaultAsync();
+            var user = await _xdb.Find(x => x.Id.ToString() == id).FirstOrDefaultAsync();
             if (user == null)
             {
                 throw new UserMessageException("User not found");
@@ -92,8 +90,8 @@ namespace XDelivered.StarterKits.NgCoreCosmosDb.Services
         {
             return new UserModel()
             {
-                Id = user.Id,
-                Email = user.Email.Value,
+                Id = user.Id.ToString(),
+                Email = user.Email,
                 Name = user.Name,
                 Role = role
             };

@@ -11,5 +11,7 @@ namespace XDelivered.StarterKits.NgCoreCosmosDb.Helpers
         /// Tells the server to use an in-memory database. This is useful for integration testing.
         /// </summary>
         public static bool IntegrationTests { get; set; } = false;
+
+        public static string IntegrationTestConnectionString { get; set; }
     }
 }
